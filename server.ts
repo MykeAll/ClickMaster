@@ -15,7 +15,7 @@ async function startServer() {
   // You should update the content here with your actual AdMob account info later.
   app.get("/app-ads.txt", (req, res) => {
     res.setHeader("Content-Type", "text/plain");
-    res.send("google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0"); // Placeholder ID
+    res.send("google.com, pub-9778861564915832, DIRECT, f08c47fec0942fa0");
   });
 
   // API Health Check
