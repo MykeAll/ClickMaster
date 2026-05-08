@@ -23,21 +23,19 @@ const AdSenseUnit: React.FC<AdSenseUnitProps> = ({
   className = '',
   style = { display: 'block' }
 }) => {
+  const adRef = React.useRef<HTMLModElement>(null);
+
   useEffect(() => {
     const initAd = () => {
       try {
-        if (typeof window !== 'undefined' && window.adsbygoogle) {
-          // Check if this specific instance or any others need initialization
-          const uninitializedAds = document.querySelectorAll('.adsbygoogle:not([data-adsbygoogle-status])');
-          
-          if (uninitializedAds.length > 0) {
-            // Push only once even if multiple elements are found? 
-            // Actually, AdSense documentation says push once per unit.
+        if (typeof window !== 'undefined' && window.adsbygoogle && adRef.current) {
+          // Verify if this specific element is still uninitialized
+          if (!adRef.current.hasAttribute('data-adsbygoogle-status')) {
             (window.adsbygoogle = window.adsbygoogle || []).push({});
           }
         }
       } catch (e) {
-        // Silently handle the case where multiple pushes might happen during hot reload
+        // Silently handle the case where multiple pushes might happen
         if (e instanceof Error && e.message.includes('already have ads')) {
           return;
         }
@@ -45,14 +43,15 @@ const AdSenseUnit: React.FC<AdSenseUnitProps> = ({
       }
     };
 
-    // Small delay to ensure DOM is ready
-    const timer = setTimeout(initAd, 200);
+    // Stagger initialization slightly to avoid race conditions
+    const timer = setTimeout(initAd, 300);
     return () => clearTimeout(timer);
   }, [slot]); // Re-run if slot changes
 
   return (
     <div className={`adsense-container ${className}`} style={{ minHeight: '90px', width: '100%', overflow: 'hidden' }}>
       <ins 
+        ref={adRef}
         className="adsbygoogle"
         style={style}
         data-ad-client={client}

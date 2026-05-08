@@ -18,6 +18,7 @@ import {
   Scale
 } from 'lucide-react';
 import { cn } from './lib/utils';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 // --- Types ---
 interface ClickEvent {
@@ -198,9 +199,9 @@ const Tooltip = ({ children, text, className }: { children: React.ReactNode, tex
 import AdSenseUnit from './components/AdSenseUnit';
 
 const AdBanner = ({ unitId, position, isVisible }: { unitId: string, position: 'top' | 'bottom', isVisible: boolean }) => {
-  const [showGuide, setShowGuide] = useState(false);
   const ADSENSE_CLIENT = "ca-pub-9778861564915832";
-  const ADSENSE_SLOT = "8720221013";
+  // Use passed unitId if it's numeric (AdSense slot style), otherwise fallback to the default slot
+  const effectiveSlot = /^\d+$/.test(unitId) ? unitId : "8720221013";
 
   return (
     <AnimatePresence>
@@ -218,99 +219,21 @@ const AdBanner = ({ unitId, position, isVisible }: { unitId: string, position: '
           {/* Header UI */}
           <div className="w-full max-w-5xl px-8 pt-2 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
               <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Monetized Terminal Active</span>
             </div>
             <div className="flex items-center gap-4">
-               <span className="text-[8px] font-mono text-slate-600">SLOT: {ADSENSE_SLOT}</span>
+               <span className="text-[8px] font-mono text-slate-600">SLOT: {effectiveSlot}</span>
             </div>
           </div>
 
           <div className="w-full max-w-5xl flex items-center justify-center p-4">
              <AdSenseUnit 
                client={ADSENSE_CLIENT}
-               slot={ADSENSE_SLOT}
+               slot={effectiveSlot}
                className="rounded-xl overflow-hidden border border-slate-800/50 bg-[#0a0c10]"
              />
           </div>
-
-          {/* Monetization Checklist Modal */}
-          <AnimatePresence>
-            {showGuide && (
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-                onClick={() => setShowGuide(false)}
-              >
-                <motion.div 
-                  initial={{ scale: 0.95, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.95, opacity: 0 }}
-                  className="bg-[#11141B] w-full max-w-lg rounded-[2.5rem] p-8 border border-slate-800 shadow-2xl"
-                  onClick={e => e.stopPropagation()}
-                >
-                  <div className="flex items-center justify-between mb-8">
-                    <div>
-                      <h2 className="text-xl font-black text-white italic uppercase tracking-wider">Monetization Checklist</h2>
-                      <p className="text-slate-500 text-xs font-mono">Steps to activate live AdMob revenue</p>
-                    </div>
-                      <button 
-                        onClick={() => setShowGuide(false)}
-                        className="w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-slate-800 transition-colors"
-                      >
-                        <X className="w-5 h-5 text-slate-400" />
-                      </button>
-                  </div>
-
-                  <div className="space-y-6">
-                    {[
-                      {
-                        title: "Verifed Custom Domain",
-                        desc: "Google AdSense restricts temporary domains like 'run.app'. You must deploy to a custom root domain (e.g., app.yourdomain.com).",
-                        ready: false
-                      },
-                      {
-                        title: "App-Ads.txt Validation",
-                        desc: "Host the auth token at yourdomain.com/app-ads.txt to verify ownership in AdMob console.",
-                        ready: false
-                      },
-                      {
-                        title: "Production Unit IDs",
-                        desc: "Replace test units (prefixed with ca-app-pub-3940...) with your unique production banner IDs.",
-                        ready: true
-                      },
-                      {
-                        title: "AdMob Policy Review",
-                        desc: "Ensure your layout doesn't overlap content. AdMob requires clear spacing and no accidental clicks.",
-                        ready: true
-                      }
-                    ].map((step, i) => (
-                      <div key={i} className="flex gap-4 p-4 rounded-3xl bg-[#0d1016] border border-slate-800/50">
-                        <div className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 flex-shrink-0 flex items-center justify-center font-bold text-xs text-indigo-400">
-                          {i + 1}
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-white mb-1">{step.title}</p>
-                          <p className="text-xs text-slate-500 leading-relaxed">{step.desc}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <button 
-                    onClick={() => setShowGuide(false)}
-                    className="w-full mt-8 h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm tracking-widest shadow-xl shadow-indigo-600/20 transition-all"
-                  >
-                    UNDERSTOOD
-                  </button>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Animated Refresh Progress - Removed Simulation Progress Bar */}
         </motion.div>
       )}
     </AnimatePresence>
@@ -343,14 +266,17 @@ export default function App() {
   const clickCountInWindow = useRef(0);
   const lastCpsUpdate = useRef(0);
 
-const ADMOB_APP_ID = import.meta.env.VITE_ADMOB_APP_ID || "ca-app-pub-3940256099942544~3347511713";
-const ADMOB_BANNER_ID = import.meta.env.VITE_ADMOB_BANNER_ID || "ca-app-pub-3940256099942544/6300978111";
+const ADMOB_APP_ID = import.meta.env.VITE_ADMOB_APP_ID || "ca-app-pub-9778861564915832~1234567890";
+const ADMOB_BANNER_ID = import.meta.env.VITE_ADMOB_BANNER_ID || "8720221013";
 
   // Simulation Logic
   const triggerClick = useCallback(() => {
     const x = Math.random() * 80 + 10; // Random position within target
     const y = Math.random() * 80 + 10;
     
+    // Mobile Haptic Feedback
+    Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
+
     setClicks(prev => [...prev.slice(-10), { id: Date.now(), x, y }]);
     setStats(prev => ({ ...prev, total: prev.total + (profile.clickType === 'single' ? 1 : 2) }));
     clickCountInWindow.current += (profile.clickType === 'single' ? 1 : 2);
