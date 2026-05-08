@@ -10,10 +10,9 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  // --- ADMOB VALIDATION ROUTE ---
-  // This is critical for Google AdMob validation. 
-  // You should update the content here with your actual AdMob account info later.
-  app.get("/app-ads.txt", (req, res) => {
+  // --- ADSENSE/ADMOB VALIDATION ROUTES ---
+  // These are critical for Google AdSense/AdMob validation. 
+  app.get(["/ads.txt", "/app-ads.txt"], (req, res) => {
     res.setHeader("Content-Type", "text/plain");
     res.send("google.com, pub-9778861564915832, DIRECT, f08c47fec0942fa0");
   });
@@ -40,6 +39,7 @@ async function startServer() {
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`[ClickMaster Pro Server] Running on http://localhost:${PORT}`);
+    console.log(`[Validation] ads.txt available at http://localhost:${PORT}/ads.txt`);
     console.log(`[Validation] app-ads.txt available at http://localhost:${PORT}/app-ads.txt`);
   });
 }
